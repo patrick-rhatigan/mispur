@@ -12,3 +12,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 URL: https://github.com/patrick-rhatigan/mispur
 BugReports: https://github.com/patrick-rhatigan/mispur/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
