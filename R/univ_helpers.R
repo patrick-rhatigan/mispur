@@ -1,3 +1,5 @@
+#Simple helper functions that will be used throughout the package
+
 # Positive part/negative part functions
 # Take positive part
 pos <- function(x) { #[ ]_+
