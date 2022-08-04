@@ -248,18 +248,19 @@ momineq_sim <- function(W, k1, k2, alpha = .05, alpha2 = 0.045, S = S1,
 #'
 #' @examples
 spur <- function(W, m = NULL,  additive = FALSE, g = NULL, f = NULL,
-                 alpha = .05, alpha2 = 0.045, S = S1, B = 1e03,
-                 Theta, theta0s, rho = NULL) {
+                 Theta, theta0s = NULL, num_init_val = 10,
+                 alpha = .05, alpha2 = 0.045, S = S1, B = 1e03, sdS = 250,
+                 iota_sd = 1e-06, iota_q = 1e-06) {
   #Store important variables
   n <- nrow(W)
   k <- ncol(W)
   alpha1 <- alpha - alpha2
 
-
-  # EGMS tuning parameter
+  # EGMS tuning parameters
   kappa <- sqrt(log(n))
   tau <- sqrt(log(n))
   tau_DR <- 0
+  #other version of code has user able to change kappa and tau, ask what is prefered
 
   #Sanity checks
   if((is.null(g)||is.null(f)) && additive){
@@ -274,13 +275,15 @@ spur <- function(W, m = NULL,  additive = FALSE, g = NULL, f = NULL,
 
   # Additively separable case and general case are delt with
   # in seperate files
-  if(additive) spur_add_sep(W=W, g=g, f=f, alpha=alpha, alpha2=alpha2,
-                            S=S, B=B,Theta=Theta, theta0s=theta0s,
-                            rho=rho)
+  if(additive) spur_add_sep(W=W, g=g, f=f, Theta=Theta, theta0s=theta0s,
+                            num_inti_val=num_inti_val, alpha=alpha,
+                            alpha2=alpha2, S=S, B=B, sdS=sdS, iota_sd=iota_sd,
+                            iota_q=iota_q)
 
-  else spur_general(W=W, m=m, alpha=alpha, alpha2=alpha2,
-                    S=S, B=B,Theta=Theta, theta0s=theta0s,
-                    rho=rho)
+  else spur_general(W=W, m=m, Theta=Theta, theta0s=theta0s,
+                    num_inti_val=num_inti_val, alpha=alpha,
+                    alpha2=alpha2, S=S, B=B, sdS=sdS, iota_sd=iota_sd,
+                    iota_q=iota_q)
 }
 
 

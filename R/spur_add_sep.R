@@ -19,17 +19,58 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
   Sigmahat <- tcrossprod(gW - gWbar) / n
   sigmahat <- sqrt(diag(Sigmahat))
 
+  # Calculate Deltahatinf
+  init_vals <- t(Theta[1, ] + (Theta[2, ] - Theta[1, ]) *
+                   t(randtoolbox::sobol(num_init_vals, dim = d)))
 
-  init_val <- rowMeans(Theta)
+  print("Calculating Deltahat_inf...")
 
-  Deltahatinf_opt <- optim(init_val, Deltahat_fun,
-                           lower = Theta[, 1],
-                           upper = Theta[, 2],
-                           method = "L-BFGS-B",
-                           gWbar = gWbar, sigmahat = sigmahat, rho = rho)
+  start_delinf <- Sys.time()
+  all_opt_results <- foreach(j = 1:nrow(init_vals)) %dopar% {
+    print(paste0("Working on initial value #", j, "..."))
+    init_val <- init_vals[j, ]
 
-  Deltahatinf <- Deltahatinf_opt$val
+    const <- function(thetatil) {
+      const_alt(thetatil, gWbar=gWbar, sigmahat=sigmahat, f=f)
+    }
 
+    gam_init <- max(-mhat_fun(init_val, gWbar=gWbar, sigmahat=sigmahat, f=f))
+
+    start_time <- Sys.time()
+
+    const_jac <- function(thetatil) {
+      cbind(1, f(thetatil[-1])/sigmahat)
+    }
+
+    Deltahatinf_opt <-
+      nloptr::slsqp(c(0, init_val), function(thetatil) thetatil[1],
+                    hin = const,
+                    hinjac = const_jac,
+                    lower = c(-Inf, Theta[1, ]),
+                    upper = c(Inf, Theta[2, ]),
+                    control = list(xtol_rel = 1e-16, maxeval = 2000))
+
+    end_time <- Sys.time()
+    delinf_time <- as.numeric(difftime(end_time, start_time, units = "secs"))
+
+    print(paste0("Done with initial value #", j, "..."))
+    print(paste0("Opt val: ", Deltahatinf_opt$val, ", time:", delinf_time))
+    return(Deltahatinf_opt)
+   }
+
+  end_delinf <- Sys.time()
+
+  print(paste0("Time taken to compute Deltahatinf with ", num_init_vals,
+               " initial values"))
+  print(as.numeric(difftime(end_delinf, start_delinf, units = "secs")))
+
+  mins <- sapply(1:length(all_opt_results),
+                 function(j) all_opt_results[[j]]$val,
+                 simplify = TRUE)
+
+  min_ind <- which(min(mins) == mins)[1]
+  Deltahatinf <- all_opt_results[[min_ind]]$val
+  Deltahatinf_par <- all_opt_results[[min_ind]]$par[-1]
   rhatinf <- pos(Deltahatinf)
 
   # Omegahatplus
@@ -46,193 +87,201 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
   mhat_mhat2 <- rbind(mhat, mhat2)
 
   omegahatplus <- tcrossprod(mhat_mhat2) / n
-  ## eig_omegahatplus <- eigen(omegahatplus)
-  ## eigvec_ohp <- eig_omegahatplus$vectors
-  ## eigval_ohp <- eig_omegahatplus$values
-  ## sqrt_ohplus <- eigvec_ohp %*% diag(sqrt(eigval_ohp)) %*% t(eigvec_ohp)
-  ## NsimZ <- B
-  ## simZ <- matrix(rnorm(2 * k * NsimZ), ncol = 2 * k)
-  ## sqrt_ohplus_simZ <-  simZ %*% sqrt_ohplus # NsimZ x 2k
-  ## sqrt_ohplus_simZ <- mvtnorm::rmvnorm(n = B, sigma = omegahatplus) # B x 2k
-  sqrt_ohplus_simZ <- mvnfast::rmvn(n = B, mu = rep(0, 2 * k), sigma = omegahatplus)
+  sqrt_ohplus_simZ <- t(mhat_mhat2 %*% matrix(rnorm(sdS * n), n, sdS) / sqrt(n))
+  # Create Thetahat, Thetahat_min, Thetahat_min_DR functions
+  # Thetahat_min and Thetahat_min_DR can be constructed using the same function
 
+  ## gen_Thetahat <-
+  ##   function(theta, rhatinf, gWbar, sigmahat, rho, tau, n) {
+  Thetahat <- function(theta) {
+    tau / sqrt(n) - max(neg(mhat_fun(theta, gWbar, sigmahat, f) + rhatinf))
+  }
+  ## }
 
-  # Thetahat_min
-  Thetahat_min <- matrix(NA, nrow = k, ncol = 2)
-  for (i in 1:k) {
-    bound <- sigmahat * (tau/sqrt(n) + Deltahatinf)
-    if (i <= k1) {
-      Thetahat_min[i,] <- c(-bound[i] + Wbar[i], Theta[2])
-    } else {
-      Thetahat_min[i,] <- c(Theta[1], Wbar[i] + bound[i])
-    }
+  Thetahat_noneg <- function(theta) {
+    tau / sqrt(n) + mhat_fun(theta, gWbar, sigmahat, f) + rhatinf
   }
 
-  Thetahat_min <- c(max(Thetahat_min[,1]), min(Thetahat_min[,2]))
-
-  # Thetahat_min_DR
-  Thetahat_min_DR <- matrix(NA, nrow = k, ncol = 2)
-  for (i in 1:k) {
-    bound <- sigmahat * (tau_DR/sqrt(n) + Deltahatinf)
-    if (i <= k1) {
-      Thetahat_min_DR[i,] <- c(-bound[i] + Wbar[i], Theta[2])
-    } else {
-      Thetahat_min_DR[i,] <- c(Theta[1], Wbar[i] + bound[i])
-    }
+  Thetahat_vec <- function(theta) {
+    tau / sqrt(n) - neg(mhat_fun(theta, gWbar, sigmahat, f) + rhatinf)
   }
 
-  Thetahat_min_DR <- c(max(Thetahat_min_DR[,1]), min(Thetahat_min_DR[,2]))
-
-  # Thetahat
-  Thetahat <- matrix(NA, nrow = k, ncol = 2)
-  for (i in 1:k) {
-    bound <- sigmahat * (tau/sqrt(n) + rhatinf)
-    if (i <= k1) {
-      Thetahat[i,] <- c(-bound[i] + Wbar[i], Theta[2])
-    } else {
-      Thetahat[i,] <- c(Theta[1], Wbar[i] + bound[i])
-    }
+  ## gen_Thetahat_min <-
+  ##   function(theta, Deltahatinf, gWbar, sigmahat, rho, tau, n) {
+  Thetahat_min <- function(theta) {
+    Deltahatinf + tau / sqrt(n) - Deltahat_fun(theta, gWbar, sigmahat, f)
   }
 
-  Thetahat <- c(max(Thetahat[,1]), min(Thetahat[,2]))
+  Thetahat_min_noneg <- function(theta) {
+    Deltahatinf + tau / sqrt(n) + mhat_fun(theta, gWbar, sigmahat, f)
+  }
+  ## }
 
+
+  Thetahat_min_DR <- function(theta) {
+    Deltahatinf + tau_DR / sqrt(n) - Deltahat_fun(theta, gWbar, sigmahat, f)
+  }
+
+  Thetahat_min_DR_noneg <- function(theta) {
+    Deltahatinf + tau_DR / sqrt(n) + mhat_fun(theta, gWbar, sigmahat, f)
+  }
+
+  const_jac <- function(theta) {
+    f(theta)/sigmahat
+  }
+
+  # Bootstrap sample
+  set.seed(1001)
   b_index <- matrix(sample.int(n, size = n*B, replace = TRUE), nrow = B)
 
-
   # Quantities irrelavant with the alternative
-  Wstarbars <- matrix(NA, nrow = k, ncol = B)
+
+  gWstarbars <- matrix(NA, nrow = k, ncol = B)
   sigmastars <- matrix(NA, nrow = k, ncol = B)
-  Deltahatstars <- numeric(B)
 
 
   for (b in 1:B) {
-    Wstar <- W[,b_index[b,]]
-    Wstarbars[, b] <- Wstarbar <- rowMeans(Wstar)
-    Sigmastar <- tcrossprod(Wstar - Wstarbar) / n
-    sigmastars[,b] <- sqrt(diag(Sigmastar))
+    gWstarbars[, b] <- calc_summ_stats_as(W[b_index[b,],], g)$gWbar
+    sigmastars[,b] <- calc_summ_stats_as(W[b_index[b,],], g)$sigmahat
   }
 
-  nu_ms <- sqrt(n) * (Wbar - Wstarbars) * c(rep(1,k1),rep(-1,k2)) /
-    sigmahat
-  nu_ms <- sqrt(n) * (Wbar - Wstarbars) * c(rep(1,k1),rep(-1,k2)) /
-    sigmahat
-  # Store A^\ast, \inf and A^\ast,\sup
-  As_infs <- numeric(B)
-  As_inf_Deltas <- numeric(B)
+  # Use only sdS samples for scale factors
+  sd_gWstarbars <- gWstarbars[, 1:sdS]
+  sd_sigmastars <- sigmastars[, 1:sdS]
 
-  As_DR_Deltas <- numeric(B)
-  As_PR_Deltas <- numeric(B)
-  As_MR_Deltas <- numeric(B)
+  # Generate objective functions
+  Astarinf_obj <-
+    gen_Astarinf_obj(gWbar = gWbar, sigmahat = sigmahat,
+                     rhatinf = rhatinf,
+                     sd_gWstarbars = sd_gWstarbars,
+                     sd_sigmastars = sd_sigmastars,
+                     n = n, kappa = kappa, f = f,
+                     iota_sd = iota_sd)
 
-  for (b in 1:B) {
-    As_infs[b] <- optimize(Astarinf_obj, Thetahat, Wbar = Wbar,
-                           Sigmahat = Sigmahat, rhatinf = rhatinf,
-                           sigmastars = sigmastars, Wstarbars = Wstarbars,
-                           n = n, b = b, B = B, kappa = kappa,
-                           k1 = k1, k2 = k2)$obj
+  Astarinf_Deltas_obj <-
+    gen_Astarinf_Deltas_obj(gWbar = gWbar, sigmahat = sigmahat,
+                            Deltahatinf = Deltahatinf,
+                            sqrt_ohplus_simZ = sqrt_ohplus_simZ,
+                            n = n, kappa = kappa, f = f,
+                            iota_sd = iota_sd)
 
-    As_inf_Deltas[b] <- optimize(Astarinf_Deltas_obj, Thetahat_min, Wbar = Wbar,
-                                 Sigmahat = Sigmahat, Deltahatinf = Deltahatinf,
-                                 sigmastars = sigmastars, Wstarbars = Wstarbars,
-                                 n = n, b = b, B = B, kappa = kappa,
-                                 sqrt_ohplus_simZ = sqrt_ohplus_simZ,
-                                 k1 = k1, k2 = k2)$obj
+  Astarinf_DR_Deltas_obj <-
+    gen_Astarinf_DR_Deltas_obj(gWbar = gWbar, sigmahat = sigmahat,
+                               Deltahatinf = Deltahatinf,
+                               sqrt_ohplus_simZ = sqrt_ohplus_simZ,
+                               n = n, kappa = kappa, f = f,
+                               iota_sd = iota_sd)
 
-    A_DR_Delta <- optimize(Astarinf_DR_Deltas_obj, Thetahat_min_DR, Wbar = Wbar,
-                           Sigmahat = Sigmahat, Deltahatinf = Deltahatinf,
-                           sigmastars = sigmastars, Wstarbars = Wstarbars,
-                           n = n, b = b, B = B, kappa = kappa,
-                           sqrt_ohplus_simZ = sqrt_ohplus_simZ,
-                           k1 = k1, k2 = k2)$obj
+  init_vals <- rbind(Deltahatinf_par, init_vals)
+  start_As <- Sys.time()
+  all_As <- foreach (b = 1:B, .combine = rbind) %dopar% {
+    ## print(paste0("b = ", b, ": ", paste0(b_index[b,], collapse = ",")))
+    print(paste0("b = ", b))
+    As_inf <- NULL
+    As_inf_Delta <- NULL
+    As_DR_Delta <- NULL
 
-    A_PR_Delta <- optimize(Astarinf_PR_Deltas_obj, Theta, Wbar = Wbar,
-                           Sigmahat = Sigmahat, Deltahatinf = Deltahatinf,
-                           sigmastars = sigmastars, Wstarbars = Wstarbars,
-                           n = n, b = b, B = B, kappa = kappa,
-                           sqrt_ohplus_simZ = sqrt_ohplus_simZ,
-                           k1 = k1, k2 = k2)$obj
+    for (j in 1) {
 
-    As_DR_Deltas[b] <- A_DR_Delta
-    As_PR_Deltas[b] <- A_PR_Delta
-    As_MR_Deltas[b] <- min(A_DR_Delta, A_PR_Delta)
+      ## for(j in 1:nrow(init_vals)) {
+      init_val <- init_vals[j, ]
+
+      if (Thetahat(init_val) >= 0) {
+        ## print("As_inf")
+        ## print(j)
+
+        Astarinf_obj_alt <- function(theta) {
+          Astarinf_obj(theta, gWstarbars[, b], sigmastars[, b])
+        }
+
+        time_Astarinf <- system.time(As_inf_opt <-
+                                       nloptr::slsqp(init_val, Astarinf_obj_alt,
+                                                     lower = Theta[1, ],
+                                                     upper = Theta[2, ],
+                                                     hin = Thetahat_noneg,
+                                                     hinjac = const_jac)
+        )
+
+        print("As_inf results:")
+        print(paste(As_inf_opt$val, time_Astarinf[3]))
+        #[3] used here (and below with) system.time to get time elapsed
+
+        As_inf <- min(As_inf, As_inf_opt$val)
+      }
+
+      if (Thetahat_min(init_val) >= 0) {
+        ## print("As_inf_Delta")
+        ## print(j)
+
+        Astarinf_Deltas_obj_alt <- function(theta) {
+          Astarinf_Deltas_obj(theta, gWstarbar = gWstarbars[, b],
+                              sigmastar = sigmastars[, b])
+        }
+
+        time_Delta <- system.time(As_inf_Delta_opt <-
+                                    nloptr::slsqp(init_val, Astarinf_Deltas_obj_alt,
+                                                  lower = Theta[1, ],
+                                                  upper = Theta[2, ],
+                                                  hin = Thetahat_min_noneg,
+                                                  hinjac = const_jac)
+        )
+        print("As_inf_Delta results:")
+        print(paste(As_inf_Delta_opt$val, time_Delta[3]))
+
+        As_inf_Delta <- min(As_inf_Delta, As_inf_Delta_opt$val)
+      }
+
+      if (Thetahat_min_DR(init_val) >= -1e-03) {
+        ## print("As_DR_Delta")
+        ## print(j)
+
+        Astarinf_DR_Deltas_obj_alt <- function(theta) {
+          Astarinf_DR_Deltas_obj(theta, gWstarbar = gWstarbars[, b],
+                                 sigmastar = sigmastars[, b])
+        }
+
+        time_DR <- system.time(As_DR_Delta_opt <-
+                                 nloptr::slsqp(init_val, Astarinf_DR_Deltas_obj_alt,
+                                               lower = Theta[1, ],
+                                               upper = Theta[2, ],
+                                               hin = Thetahat_min_DR_noneg,
+                                               hinjac = const_jac))
+
+
+        print("As_DR_Delta results:")
+        print(paste(As_DR_Delta_opt$val, time_DR[3]))
+
+        As_DR_Delta <- min(As_DR_Delta, As_DR_Delta_opt$val)
+      }
+    }
+
+
+    return(c(As_inf, As_inf_Delta, As_DR_Delta, time_Astarinf[3], time_Delta[3], time_DR[3]))
   }
 
-  Deltahat_UB <- Deltahatinf + quantile(-As_inf_Deltas, 1-alpha1)/sqrt(n)
+  end_As <- Sys.time()
+  print("Time taken to compute As:")
+  print(end_As - start_As)
+  print(colSums(all_As[, 4:6]) / 60 / 36)
+  As_infs <- all_As[, 1]
+  As_inf_Deltas <- all_As[, 2]
+  As_DR_Deltas <- all_As[, 3]
+
+  Deltahat_UB <- Deltahatinf + quantile(-As_inf_Deltas, 1 - alpha1) / sqrt(n) + iota_q
   rn <- max(Deltahat_UB, 0)
 
-  ## Deltahat_LB_DR <- Deltahatinf - quantile(As_DR_Deltas, 1-alpha)/sqrt(n)
-  ## Deltahat_LB_PR <- Deltahatinf - quantile(As_PR_Deltas, 1-alpha)/sqrt(n)
-  ## Deltahat_LB <- Deltahatinf - quantile(As_MR_Deltas, 1-alpha)/sqrt(n)
 
-  CIs <- c(Deltahatinf - quantile(As_MR_Deltas, 1 - alpha/2) / sqrt(n),
-           Deltahatinf - quantile(As_DR_Deltas, 1 - alpha/2) / sqrt(n),
-           Deltahatinf - quantile(As_PR_Deltas, 1 - alpha/2) / sqrt(n),
-           Deltahatinf + quantile(-As_inf_Deltas, 1 - alpha/2) / sqrt(n),
-           Deltahatinf - quantile(As_MR_Deltas, 1 - alpha) / sqrt(n),
-           Deltahatinf - quantile(As_DR_Deltas, 1 - alpha) / sqrt(n),
-           Deltahatinf - quantile(As_PR_Deltas, 1 - alpha) / sqrt(n),
-           Deltahatinf + quantile(-As_inf_Deltas, 1 - alpha)/sqrt(n))
-  names(CIs) <- c("LB95", "LB95_DR", "LB95_PR", "UB95",
-                  "LB90", "LB90_DR", "LB90_PR", "UB90")
+  CIs <- c(Deltahatinf - (quantile(As_DR_Deltas, 1 - alpha/2) + iota_q) / sqrt(n),
+           Deltahatinf + (quantile(-As_inf_Deltas, 1 - alpha/2) + iota_q) / sqrt(n),
+           Deltahatinf - (quantile(As_DR_Deltas, 1 - alpha) + iota_q) / sqrt(n),
+           Deltahatinf + (quantile(-As_inf_Deltas, 1 - alpha) + iota_q)/sqrt(n),
+           Deltahatinf)
 
-  reject <- as.data.frame(matrix(NA, nrow = length(theta0s), ncol = 3))
-  names(reject) <- c("SPUR1", "SPUR2", "GMS")
+  names(CIs) <- c("LB95", "UB95", "LB90", "UB90", "Deltahatinf")
 
-  row.names(reject) <- theta0s
+  return(list(Deltahatinf = Deltahatinf,
+              Deltahatinf_par = Deltahatinf_par,
+              CIs = CIs, all_As = all_As[,1:3], b_index = b_index))
 
-  for (i in 1:length(theta0s)) {
-
-    theta0 <- theta0s[i]
-
-    # mhat and mbar
-    mhattheta0 <- mhat(theta0, Wbar, Sigmahat, k1 = k1, k2 = k2)
-    mbartheta0 <- mhattheta0 * sigmahat
-
-    # bootstrap counterparts
-    mbarstars <- (theta0 - Wstarbars) * c(rep(1,k1),rep(-1,k2))
-    mhatstarstars <- mhat(theta0, Wstarbars, sigmas = sigmastars,
-                          k1 = k1, k2 = k2)
-    nuhat_star_theta0 <- sqrt(n) * (mhatstarstars - mhattheta0)
-
-    # sd1
-    negmhatstars <- neg(mhatstarstars)
-    maxmhatss <- apply(negmhatstars, 2, function(mhat) max(mhat))
-
-    Vstar1summand <- t(t(mhatstarstars) + maxmhatss)
-    Vhatstar1 <- n * ((B - 1)/B) *
-      sapply(1:k, function(l) var(Vstar1summand[l,]))
-    sd1 <- sqrt(pmax(Vhatstar1, rep(1,k)))
-
-    # GMS part for SPUR1
-    # Add phitheta0 to nuhat_theta0
-    rhattheta0 <- rhat(theta0, Wbar, Sigmahat, k1 = k1, k2 = k2)
-    xitheta0 <- (sqrt(n)/kappa)*(mhattheta0 + rhattheta0)
-    phitheta0_1EGMS <- phi((1/sd1) * xitheta0)
-    Tstars <- nuhat_star_theta0 + phitheta0_1EGMS
-
-    # GMS part for std GMS
-    phitheta0_GMS <- phi((sqrt(n)/kappa)*mhattheta0)
-
-    # Test stats
-    Stheta0_1step <- S(sqrt(n)*(mhattheta0 + rhatinf))
-    Stheta0_GMS <- S(sqrt(n) * mhattheta0)
-
-    # Store bootstrapped test stats
-    Ss_GMS <-  sapply(1:B, function(b) S(nu_ms[,b] + phitheta0_GMS))
-    Ss_SPUR1 <- sapply(1:B, function(b) S(Tstars[,b] + As_infs[b]))
-
-    # Rejections
-    # SPUR1
-    reject[i,1] <- 1 * c(Stheta0_1step > quantile(Ss_SPUR1, 1 - alpha))
-    # SPUR2
-    reject_SPUR_alpha2 <- 1 * c(Stheta0_1step > quantile(Ss_SPUR1, 1 - alpha2))
-    reject_GMS_alpha2 <- 1 * (Stheta0_GMS > quantile(Ss_GMS, 1-alpha2))
-    reject[i,2] <- ifelse(rn == 0,
-                          reject_GMS_alpha2,
-                          min(reject_GMS_alpha2, reject_SPUR_alpha2))
-    # Standard GMS
-    reject[i,3] <-  1 * c(Stheta0_GMS > quantile(Ss_GMS, 1 - alpha))
-  }
-
-  return(list(reject = reject, CIs = CIs))
 }
+
