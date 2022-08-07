@@ -1,14 +1,14 @@
 # This script contains functions specific to the upper/lower
 #  bound model where mu_1 <= theta <= mu_2
 
-gen_mhat_fun <- function(k1, k2) {
+gen_mhat_fun_ulbd <- function(k1, k2) {
   mhat_fun <- function(theta, Wbar, sigmahat) {
     (theta - Wbar) * c(rep(1, k1), rep(-1, k2)) / sigmahat
   }
   return(mhat_fun)
 }
 
-gen_Deltahat_fun <- function(k1, k2) {
+gen_Deltahat_fun_ulbd <- function(k1, k2) {
 
   mhat_fun <- gen_mhat_fun(k1, k2)
 
@@ -19,14 +19,14 @@ gen_Deltahat_fun <- function(k1, k2) {
   return(Deltahat_fun)
 }
 
-gen_m_minus_mhat_fun <- function(k1, k2) {
+gen_m_minus_mhat_fun_ulbd <- function(k1, k2) {
   m_minus_mhat_fun <- function(W, Wbar, sigmahat) {
     (W - Wbar) * c(rep(-1, k1), rep(1, k2)) / sigmahat
   }
   return(m_minus_mhat_fun)
 }
 
-gen_Astarinf_obj <- function(Wbar, sigmahat, mhat_fun, rhatinf, sd_Wstarbars,
+gen_Astarinf_obj_ulbd <- function(Wbar, sigmahat, mhat_fun, rhatinf, sd_Wstarbars,
                              sd_sigmastars, n, kappa) {
 
   Astarinf_obj <- function(theta, Wstarbar, sigmastar) {
@@ -71,7 +71,7 @@ gen_Astarinf_obj <- function(Wbar, sigmahat, mhat_fun, rhatinf, sd_Wstarbars,
 }
 
 
-gen_Astarinf_Deltas_obj <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
+gen_Astarinf_Deltas_obj_ulbd <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
                                     sqrt_ohplus_simZ, n, kappa) {
 
   Astarinf_Deltas_obj <- function(theta, Wstarbar, sigmastar) {
@@ -108,7 +108,7 @@ gen_Astarinf_Deltas_obj <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
 }
 
 
-gen_Astarinf_DR_Deltas_obj <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
+gen_Astarinf_DR_Deltas_obj_ulbd <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
                                        sqrt_ohplus_simZ, n, kappa) {
 
   Astarinf_DR_Deltas_obj <- function(theta,  Wstarbar, sigmastar) {
@@ -133,7 +133,7 @@ gen_Astarinf_DR_Deltas_obj <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
 
 
 
-gen_Astarinf_PR_Deltas_obj <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
+gen_Astarinf_PR_Deltas_obj_ulbd <- function(Wbar, sigmahat, mhat_fun, Deltahatinf,
                                        sqrt_ohplus_simZ, n, kappa) {
 
   Astarinf_PR_Deltas_obj <- function(theta, Wstarbar, sigmastar) {

@@ -1,4 +1,5 @@
 #This file contains the calculations for the general case
+
 spur_general <- function(W, m, Theta, theta0s, num_inti_val, alpha,
              alpha2, S, B, sdS, iota_sd, iota_q) {
 

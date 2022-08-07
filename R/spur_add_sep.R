@@ -74,7 +74,7 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
   rhatinf <- pos(Deltahatinf)
 
   # Omegahatplus
-  mhat_n <- m_minus_mhat_fun(gW, gWbar, sigmahat)
+  mhat_n <- m_minus_mhat_fun_as(gW, gWbar, sigmahat)
   mhat_n2 <- mhat_n^2 - 1
   mhat_mhat2 <- rbind(mhat_n, mhat_n2)
   omegahatplus <- tcrossprod(mhat_mhat2) / n
@@ -109,21 +109,21 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
   ## gen_Thetahat_min <-
   ##   function(theta, Deltahatinf, gWbar, sigmahat, rho, tau, n) {
   Thetahat_min <- function(theta) {
-    Deltahatinf + tau / sqrt(n) - Deltahat_fun(theta, gWbar, sigmahat, f)
+    Deltahatinf + tau / sqrt(n) - Deltahat_fun_as(theta, gWbar, sigmahat, f)
   }
 
   Thetahat_min_noneg <- function(theta) {
-    Deltahatinf + tau / sqrt(n) + mhat_fun(theta, gWbar, sigmahat, f)
+    Deltahatinf + tau / sqrt(n) + mhat_fun_as(theta, gWbar, sigmahat, f)
   }
   ## }
 
 
   Thetahat_min_DR <- function(theta) {
-    Deltahatinf + tau_DR / sqrt(n) - Deltahat_fun(theta, gWbar, sigmahat, f)
+    Deltahatinf + tau_DR / sqrt(n) - Deltahat_fun_as(theta, gWbar, sigmahat, f)
   }
 
   Thetahat_min_DR_noneg <- function(theta) {
-    Deltahatinf + tau_DR / sqrt(n) + mhat_fun(theta, gWbar, sigmahat, f)
+    Deltahatinf + tau_DR / sqrt(n) + mhat_fun_as(theta, gWbar, sigmahat, f)
   }
 
   const_jac <- function(theta) {
@@ -151,7 +151,7 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
 
   # Generate objective functions
   Astarinf_obj <-
-    gen_Astarinf_obj(gWbar = gWbar, sigmahat = sigmahat,
+    gen_Astarinf_obj_as(gWbar = gWbar, sigmahat = sigmahat,
                      rhatinf = rhatinf,
                      sd_gWstarbars = sd_gWstarbars,
                      sd_sigmastars = sd_sigmastars,
@@ -159,14 +159,14 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
                      iota_sd = iota_sd)
 
   Astarinf_Deltas_obj <-
-    gen_Astarinf_Deltas_obj(gWbar = gWbar, sigmahat = sigmahat,
+    gen_Astarinf_Deltas_obj_as(gWbar = gWbar, sigmahat = sigmahat,
                             Deltahatinf = Deltahatinf,
                             sqrt_ohplus_simZ = sqrt_ohplus_simZ,
                             n = n, kappa = kappa, f = f,
                             iota_sd = iota_sd)
 
   Astarinf_DR_Deltas_obj <-
-    gen_Astarinf_DR_Deltas_obj(gWbar = gWbar, sigmahat = sigmahat,
+    gen_Astarinf_DR_Deltas_obj_as(gWbar = gWbar, sigmahat = sigmahat,
                                Deltahatinf = Deltahatinf,
                                sqrt_ohplus_simZ = sqrt_ohplus_simZ,
                                n = n, kappa = kappa, f = f,
@@ -191,7 +191,7 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
         ## print(j)
 
         Astarinf_obj_alt <- function(theta) {
-          Astarinf_obj(theta, gWstarbars[, b], sigmastars[, b])
+          Astarinf_obj_as(theta, gWstarbars[, b], sigmastars[, b])
         }
 
         time_Astarinf <- system.time(As_inf_opt <-
@@ -214,7 +214,7 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
         ## print(j)
 
         Astarinf_Deltas_obj_alt <- function(theta) {
-          Astarinf_Deltas_obj(theta, gWstarbar = gWstarbars[, b],
+          Astarinf_Deltas_obj_as(theta, gWstarbar = gWstarbars[, b],
                               sigmastar = sigmastars[, b])
         }
 
@@ -236,7 +236,7 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
         ## print(j)
 
         Astarinf_DR_Deltas_obj_alt <- function(theta) {
-          Astarinf_DR_Deltas_obj(theta, gWstarbar = gWstarbars[, b],
+          Astarinf_DR_Deltas_obj_as(theta, gWstarbar = gWstarbars[, b],
                                  sigmastar = sigmastars[, b])
         }
 

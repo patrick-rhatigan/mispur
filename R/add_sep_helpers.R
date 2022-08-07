@@ -12,16 +12,16 @@
 #' @export
 #'
 #' @examples
-mhat_fun <- function(theta, gWbar, sigmahat, f) {
+mhat_fun_as <- function(theta, gWbar, sigmahat, f) {
   ftheta <- f(theta)
   (gWbar + ftheta) / sigmahat
 }
 
-Deltahat_fun <- function(theta, gWbar, sigmahat) {
+Deltahat_fun_as <- function(theta, gWbar, sigmahat) {
   max(-mhat_fun(theta, gWbar, sigmahat))
 }
 
-m_minus_mhat_fun <- function(gW, gWbar, sigmahat) {
+m_minus_mhat_fun_as <- function(gW, gWbar, sigmahat) {
   (gW - gWbar) / sigmahat
 }
 
@@ -81,7 +81,7 @@ calc_summ_stats_as <- function(W, g) {
 #' @export
 #'
 #' @examples
-gen_Astarinf_obj <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,
+gen_Astarinf_obj_as <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,
                              sd_sigmastars, n, kappa, f, iota_sd) {
   Astarinf_obj <- function(theta, gWstarbar, sigmastar) {
 
@@ -129,7 +129,7 @@ gen_Astarinf_obj <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,
   return(Astarinf_obj)
 }
 
-gen_Astarinf_obj_comp <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,
+gen_Astarinf_obj_comp_as <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,
                                   sd_sigmastars, n, kappa, f,
                                   sd2, sd3) {
   Astarinf_obj <- function(theta, gWstarbar, sigmastar) {
@@ -166,7 +166,7 @@ gen_Astarinf_obj_comp <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,
 }
 
 
-gen_Astarinf_Deltas_obj <- function(gWbar, sigmahat, Deltahatinf,
+gen_Astarinf_Deltas_obj_as <- function(gWbar, sigmahat, Deltahatinf,
                                     sqrt_ohplus_simZ, n, kappa, f, iota_sd) {
 
   Astarinf_Deltas_obj <- function(theta, gWstarbar, sigmastar) {
@@ -206,7 +206,7 @@ gen_Astarinf_Deltas_obj <- function(gWbar, sigmahat, Deltahatinf,
 }
 
 
-gen_Astarinf_DR_Deltas_obj <- function(gWbar, sigmahat, Deltahatinf,
+gen_Astarinf_DR_Deltas_obj_as <- function(gWbar, sigmahat, Deltahatinf,
                                        sqrt_ohplus_simZ, n, kappa, f, iota_sd) {
 
   Astarinf_DR_Deltas_obj <- function(theta,  gWstarbar, sigmastar) {

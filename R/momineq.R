@@ -18,9 +18,9 @@ momineq_sim <- function(W, k1, k2, alpha = .05, alpha2 = 0.045, S = S1,
   alpha1 <- alpha - alpha2
 
   # Generate some commonly used functions
-  mhat_fun <- gen_mhat_fun(k1, k2)
-  m_minus_mhat_fun <- gen_m_minus_mhat_fun(k1, k2)
-  Deltahat_fun <- gen_Deltahat_fun(k1, k2)
+  mhat_fun <- gen_mhat_fun_ulbd(k1, k2)
+  m_minus_mhat_fun <- gen_m_minus_mhat_fun_ulbd(k1, k2)
+  Deltahat_fun <- gen_Deltahat_fun_ulbd(k1, k2)
 
   # Tuning parameters
   kappa <- sqrt(log(n))
@@ -97,22 +97,22 @@ momineq_sim <- function(W, k1, k2, alpha = .05, alpha2 = 0.045, S = S1,
 
   # Generate objective functions
   Astarinf_obj <-
-    gen_Astarinf_obj(Wbar = Wbar, sigmahat = sigmahat, mhat_fun = mhat_fun,
+    gen_Astarinf_obj_ulbd(Wbar = Wbar, sigmahat = sigmahat, mhat_fun = mhat_fun,
                      rhatinf = rhatinf, sd_Wstarbars = sd_Wstarbars,
                      sd_sigmastars = sd_sigmastars, n = n, kappa = kappa)
   Astarinf_Deltas_obj <-
-    gen_Astarinf_Deltas_obj(Wbar = Wbar, sigmahat = sigmahat,
+    gen_Astarinf_Deltas_obj_ulbd(Wbar = Wbar, sigmahat = sigmahat,
                             mhat_fun = mhat_fun, Deltahatinf = Deltahatinf,
                             sqrt_ohplus_simZ = sqrt_ohplus_simZ,
                             n = n, kappa = kappa)
   Astarinf_DR_Deltas_obj <-
-    gen_Astarinf_DR_Deltas_obj(Wbar = Wbar, sigmahat = sigmahat,
+    gen_Astarinf_DR_Deltas_obj_ulbd(Wbar = Wbar, sigmahat = sigmahat,
                                mhat_fun = mhat_fun, Deltahatinf = Deltahatinf,
                                sqrt_ohplus_simZ = sqrt_ohplus_simZ,
                                n = n, kappa = kappa)
 
   Astarinf_PR_Deltas_obj <-
-    gen_Astarinf_PR_Deltas_obj(Wbar = Wbar, sigmahat = sigmahat,
+    gen_Astarinf_PR_Deltas_obj_ulbd(Wbar = Wbar, sigmahat = sigmahat,
                                mhat_fun = mhat_fun, Deltahatinf = Deltahatinf,
                                sqrt_ohplus_simZ = sqrt_ohplus_simZ,
                                n = n, kappa = kappa)
