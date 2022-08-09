@@ -12,10 +12,12 @@
 #' @examples
 gen_Deltahat_fun_g <- function(m) {
   Deltahat_fun_g <- function(W, theta) {
-    mWtheta <- matrix(NA, nrow = n, ncol = k)
-    for(i in 1:n) {
-      mWtheta [i,] <- sapply(W[i,], m, theta=theta)
-    }
+
+    #mWtheta <- matrix(NA, nrow = n, ncol = k)
+    # for(i in 1:n) {
+    #   mWtheta [i,] <- sapply(W[i,], m, theta=theta)
+    # }
+    mWtheta <- purrr::modify(W, m, theta=theta)
     mbar <- colMeans(mWtheta)
     Sigmahat <- tcrossprod(mWtheta - mbar) / n
     sigmahat <- sqrt(diag(Sigmahat))
