@@ -7,8 +7,9 @@
 #' @export
 #'
 #' @examples
-spur_add_sep <- function(W, g, f, alpha, alpha2,
-                         S, B ,Theta, theta0s, rho){
+spur_add_sep <- function(W, g, f, Theta, theta0s,
+                         num_inti_val, alpha, alpha2,
+                         S, B, sdS, iota_sd, iota_q){
   #summary stats
   gW <- matrix(NA,nrow = n, ncol = k)
   for(i in 1:n) {
@@ -26,7 +27,7 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
   print("Calculating Deltahat_inf...")
 
   start_delinf <- Sys.time()
-  all_opt_results <- foreach(j = 1:nrow(init_vals)) %dopar% {
+  all_opt_results <- foreach(j = 1:num_inti_val) %dopar% {
     print(paste0("Working on initial value #", j, "..."))
     init_val <- init_vals[j, ]
 
@@ -181,14 +182,11 @@ spur_add_sep <- function(W, g, f, alpha, alpha2,
     As_inf_Delta <- NULL
     As_DR_Delta <- NULL
 
-    for (j in 1) {
+    for (j in 1:num_init_val) {
 
-      ## for(j in 1:nrow(init_vals)) {
       init_val <- init_vals[j, ]
 
       if (Thetahat(init_val) >= 0) {
-        ## print("As_inf")
-        ## print(j)
 
         Astarinf_obj_alt <- function(theta) {
           Astarinf_obj_as(theta, gWstarbars[, b], sigmastars[, b])

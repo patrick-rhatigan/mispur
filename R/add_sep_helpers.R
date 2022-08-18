@@ -18,7 +18,7 @@ mhat_fun_as <- function(theta, gWbar, sigmahat, f) {
 }
 
 Deltahat_fun_as <- function(theta, gWbar, sigmahat) {
-  max(-mhat_fun(theta, gWbar, sigmahat))
+  max(-mhat_fun(theta, gWbar, sigmahat, f))
 }
 
 m_minus_mhat_fun_as <- function(gW, gWbar, sigmahat) {
@@ -135,9 +135,9 @@ gen_Astarinf_obj_comp_as <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,
   Astarinf_obj <- function(theta, gWstarbar, sigmastar) {
 
     # Sample moments
-    mhattheta <- mhat_fun(theta, gWbar, sigmahat, f)
+    mhattheta <- mhat_fun_as(theta, gWbar, sigmahat, f)
     nuhat_star <- sqrt(n) *
-      (mhat_fun(theta, gWstarbar, sigmastar, rho, px) - mhattheta)
+      (mhat_fun_as(theta, gWstarbar, sigmastar, f) - mhattheta)
 
 
     chistartheta <- ifelse(nuhat_star >= 0,
