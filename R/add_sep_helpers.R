@@ -18,7 +18,7 @@ mhat_fun_as <- function(theta, gWbar, sigmahat, f) {
 }
 
 Deltahat_fun_as <- function(theta, gWbar, sigmahat) {
-  max(-mhat_fun(theta, gWbar, sigmahat, f))
+  max(-mhat_fun_as(theta, gWbar, sigmahat, f))
 }
 
 m_minus_mhat_fun_as <- function(gW, gWbar, sigmahat) {

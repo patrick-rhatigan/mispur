@@ -35,7 +35,7 @@ spur_add_sep <- function(W, g, f, Theta, theta0s,
       const_alt(thetatil, gWbar=gWbar, sigmahat=sigmahat, f=f)
     }
 
-    gam_init <- max(-mhat_fun(init_val, gWbar=gWbar, sigmahat=sigmahat, f=f))
+    gam_init <- max(-mhat_fun_as(init_val, gWbar=gWbar, sigmahat=sigmahat, f=f))
 
     start_time <- Sys.time()
 
@@ -95,16 +95,16 @@ spur_add_sep <- function(W, g, f, Theta, theta0s,
   ## gen_Thetahat <-
   ##   function(theta, rhatinf, gWbar, sigmahat, rho, tau, n) {
   Thetahat <- function(theta) {
-    tau / sqrt(n) - max(neg(mhat_fun(theta, gWbar, sigmahat, f) + rhatinf))
+    tau / sqrt(n) - max(neg(mhat_fun_as(theta, gWbar, sigmahat, f) + rhatinf))
   }
   ## }
 
   Thetahat_noneg <- function(theta) {
-    tau / sqrt(n) + mhat_fun(theta, gWbar, sigmahat, f) + rhatinf
+    tau / sqrt(n) + mhat_fun_as(theta, gWbar, sigmahat, f) + rhatinf
   }
 
   Thetahat_vec <- function(theta) {
-    tau / sqrt(n) - neg(mhat_fun(theta, gWbar, sigmahat, f) + rhatinf)
+    tau / sqrt(n) - neg(mhat_fun_as(theta, gWbar, sigmahat, f) + rhatinf)
   }
 
   ## gen_Thetahat_min <-
@@ -189,7 +189,7 @@ spur_add_sep <- function(W, g, f, Theta, theta0s,
       if (Thetahat(init_val) >= 0) {
 
         Astarinf_obj_alt <- function(theta) {
-          Astarinf_obj_as(theta, gWstarbars[, b], sigmastars[, b])
+          Astarinf_obj(theta, gWstarbars[, b], sigmastars[, b])
         }
 
         time_Astarinf <- system.time(As_inf_opt <-
@@ -212,7 +212,7 @@ spur_add_sep <- function(W, g, f, Theta, theta0s,
         ## print(j)
 
         Astarinf_Deltas_obj_alt <- function(theta) {
-          Astarinf_Deltas_obj_as(theta, gWstarbar = gWstarbars[, b],
+          Astarinf_Deltas_obj(theta, gWstarbar = gWstarbars[, b],
                               sigmastar = sigmastars[, b])
         }
 
@@ -234,7 +234,7 @@ spur_add_sep <- function(W, g, f, Theta, theta0s,
         ## print(j)
 
         Astarinf_DR_Deltas_obj_alt <- function(theta) {
-          Astarinf_DR_Deltas_obj_as(theta, gWstarbar = gWstarbars[, b],
+          Astarinf_DR_Deltas_obj(theta, gWstarbar = gWstarbars[, b],
                                  sigmastar = sigmastars[, b])
         }
 

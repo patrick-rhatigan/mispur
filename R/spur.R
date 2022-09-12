@@ -15,8 +15,13 @@
 #' @param num_init_val Number of initial values to be used in each
 #' bootstrap sample optimization. Choosing values above the default of one
 #' may increase precision, but will also increase calculation time.
-#' @param alpha Significance level, default is 0.05
-#' @param alpha2
+#' @param alpha Significance level of the SPUR2 test, default is 0.05
+#' @param alpha2 Significance level used for the SPUR1 and GMS tests,
+#' default is 0.045.
+#'
+#' alpha = alpha1 + alpha2 so alpha1 is computed by the function given the users
+#' inputs of alpha and alpha2. alpha1 is the significance level used to construct
+#' the CI for r_inf.
 #' @param S
 #' @param B Number of Bootstrap samples used. Default is 1000
 #' @param sdS
