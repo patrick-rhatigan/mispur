@@ -1,2 +1,23 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # mispur
-Rough Draft of R package for moment inequality SPUR tests
+
+Mispur is an R package designed to implement the moment inequality
+econometric model outlined in “Mispecified Moment Inequality Models:
+Inference and Diagnostics” (Andrews and Kwon 2022.) In it’s current
+form, the package focuses on cases where the moment function is
+“additively separable” i.e. the case where we have the following
+functional form: m(W,theta) = g(W) + f(theta)
+
+## Installation
+
+You can install the development version of mispur from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("patrick-rhatigan/mispur")
+```
+
+## Example

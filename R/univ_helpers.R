@@ -11,7 +11,7 @@
 #' @return A new vector where the negative values in x are
 #'  replaced by zeros
 #' @seealso [neg()]
-#' @export
+#'
 #'
 #' @examples pos(-2:2) == c(0,0,0,1,2)
 pos <- function(x) { #[ ]_+
@@ -24,7 +24,7 @@ pos <- function(x) { #[ ]_+
 #' @param x vector of numerics
 #'
 #' @return vector x with positive values replaced by zeros
-#' @export
+#'
 #'
 #' @examples neg(-2:2) == c(-2,-1,0,0,0)
 neg <- function(x) { #[ ]_-
@@ -38,7 +38,7 @@ neg <- function(x) { #[ ]_-
 #' @param x vector of numerics
 #'
 #' @return vector x where any value > 1 is replaced by 1
-#' @export
+#'
 #'
 #' @examples pmax1(-2:2) == c(-2,-1,0,1,1)
 pmax1 <- function(x) {
@@ -54,7 +54,7 @@ pmax1 <- function(x) {
 #' @param xi vector of numerics
 #'
 #' @return vector where any xi>1 is infinity and otherwise is zero
-#' @export
+#'
 #'
 #' @examples
 #' phi(-2:2) == c(0,0,0,0,Inf)

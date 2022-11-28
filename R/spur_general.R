@@ -20,11 +20,8 @@ spur_general <- function(W, m, Theta, theta0s, num_inti_val, alpha,
   #Bootstrapping:
   set.seed(1001)
   b_index <- matrix(sample.int(n, size = n*B, replace = TRUE), nrow = B)
+
   for(b in 1:B) {
     Wstar <- W[b_index[b,],] #bootstrap sample data
-
-
-
-
   }
 }

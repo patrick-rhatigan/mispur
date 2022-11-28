@@ -6,7 +6,7 @@
 #'runs SPUR1, SPUR2, and GMS (when r = 0). The following function is for the
 #' lower/upper bound model, and is specialized for the simulation.
 #'
-#'@export
+#'
 
 momineq_sim <- function(W, k1, k2, alpha = .05, alpha2 = 0.045, S = S1,
                         B = 1e03, sdS = 250,

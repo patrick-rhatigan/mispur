@@ -9,7 +9,7 @@
 #' @param f The function f(theta) that is a component of m(W,theta)
 #'
 #' @return
-#' @export
+#'
 #'
 #' @examples
 mhat_fun_as <- function(theta, gWbar, sigmahat, f) {
@@ -42,7 +42,7 @@ const_alt <- function(thetatil, gWbar, sigmahat, f) {
 #' @param g the function g(W)
 #'
 #' @return
-#' @export
+#'
 #'
 #' @examples
 calc_summ_stats_as <- function(W, g) {
@@ -78,7 +78,7 @@ calc_summ_stats_as <- function(W, g) {
 #' @param iota_sd buffer term (default is 1e-06)
 #'
 #' @return
-#' @export
+#'
 #'
 #' @examples
 gen_Astarinf_obj_as <- function(gWbar, sigmahat, rhatinf, sd_gWstarbars,

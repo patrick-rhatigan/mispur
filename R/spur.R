@@ -34,7 +34,7 @@
 
 #'
 #' @return
-#' @export
+#'
 #'
 #' @examples
 spur <- function(W, m = NULL,  additive = FALSE, g = NULL, f = NULL,

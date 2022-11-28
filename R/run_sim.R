@@ -10,7 +10,7 @@
 #' the moment "upper bounds"
 #'@param ... These arguments are passed to \code{\link{momineq}}
 #'@importFrom foreach %dopar%
-#'@export
+#'
 
 ulbd_sim <- function(Nsim = 1e03, n = 250, B = 1e03, sdS = 250,
                      k1, k2, mu, ncores) {
