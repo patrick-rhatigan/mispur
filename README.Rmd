@@ -27,6 +27,5 @@ You can install the development version of mispur from [GitHub](https://github.c
 devtools::install_github("patrick-rhatigan/mispur")
 ```
 
-## Example
 
 

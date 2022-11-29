@@ -20,4 +20,3 @@ You can install the development version of mispur from
 devtools::install_github("patrick-rhatigan/mispur")
 ```
 
-## Example
